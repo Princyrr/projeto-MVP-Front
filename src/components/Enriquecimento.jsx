@@ -1,0 +1,311 @@
+import { useState, useEffect } from "react";
+import {
+  FileText,
+  Briefcase,
+  DollarSign,
+  Hash,
+  CheckCircle,
+} from "lucide-react";
+import { API_URL } from "../config";
+
+export default function Enriquecimento({ company, isRegistered, currentUser }) {
+  const [historico, setHistorico] = useState([]);
+  const [form, setForm] = useState({
+    site: "",
+    linkedin: "",
+    instagram: "",
+    facebook: "",
+    numero_empregados_estimado: "",
+    faturamento_estimado: "",
+    segmento_comercial: "",
+    potencial_comercial: "",
+    observacoes: "",
+  });
+
+  useEffect(() => {
+    const fetchEnriquecimento = async () => {
+      if (!company?.cnpj) return;
+
+      try {
+        const res = await fetch(
+          `${API_URL}/api/enriquecimento/${company.cnpj}`,
+        );
+        const data = await res.json();
+
+        setForm({
+          site: data.site ?? "",
+          linkedin: data.linkedin ?? "",
+          instagram: data.instagram ?? "",
+          facebook: data.facebook ?? "",
+          numero_empregados_estimado:
+            data.numero_empregados_estimado > 0
+              ? data.numero_empregados_estimado
+              : "",
+          faturamento_estimado:
+            data.faturamento_estimado > 0 ? data.faturamento_estimado : "",
+          segmento_comercial: data.segmento_comercial ?? "",
+          potencial_comercial: data.potencial_comercial ?? "",
+          observacoes: data.observacoes ?? "",
+        });
+        setHistorico(data.historico_atualizacao || []);
+      } catch (err) {
+        console.error("Erro ao buscar enriquecimento:", err);
+      }
+    };
+
+    fetchEnriquecimento();
+  }, [company?.cnpj]);
+
+  const handleSave = async () => {
+    if (!company?.cnpj) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/enriquecimento`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cnpj: company.cnpj,
+          user: {
+            firstName: currentUser?.firstName,
+            lastName: currentUser?.lastName,
+          },
+          ...form,
+          potencial_comercial: ["baixo", "médio", "alto"].includes(
+            form.potencial_comercial,
+          )
+            ? form.potencial_comercial
+            : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      setHistorico(data.historico_atualizacao || []);
+      console.log("Enriquecimento salvo:", data);
+
+      alert("Dados de enriquecimento salvos com sucesso!");
+    } catch (err) {
+      console.error("Erro ao salvar enriquecimento:", err);
+      alert("Erro ao salvar os dados de enriquecimento.");
+    }
+  };
+  const handleDeleteHistorico = async (index) => {
+    try {
+      const res = await fetch(
+        `${API_URL}/api/enriquecimento/remover-historico`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cnpj: company.cnpj,
+            index,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      setHistorico(data.historico_atualizacao || []);
+    } catch (err) {
+      console.error("Erro ao remover:", err);
+    }
+  };
+
+  const InfoCardEditable = ({
+    icon: Icon,
+    title,
+    field,
+    type = "text",
+    fullWidth = false,
+    formatCurrencyOnBlur = false,
+  }) => {
+    const [inputValue, setInputValue] = useState(form[field] ?? "");
+
+    useEffect(() => {
+      setInputValue(form[field] ?? "");
+    }, [form[field]]);
+
+    const handleChange = (e) => {
+      let val = e.target.value;
+
+      if (field === "faturamento_estimado") {
+        val = val.replace(/[^0-9.,]/g, "");
+      } else if (type === "number") {
+        val = val.replace(/\D/g, "");
+      }
+
+      setInputValue(val);
+    };
+
+    const handleBlur = () => {
+      if (field === "faturamento_estimado" && inputValue) {
+        const numericValue = Number(
+          inputValue.replace(/\./g, "").replace(",", "."),
+        );
+
+        if (!numericValue) {
+          setForm((prev) => ({ ...prev, [field]: "" }));
+          setInputValue("");
+          return;
+        }
+
+        setForm((prev) => ({ ...prev, [field]: numericValue }));
+
+        const formatted = new Intl.NumberFormat("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }).format(numericValue);
+
+        setInputValue(formatted);
+      } else {
+        setForm((prev) => ({ ...prev, [field]: inputValue }));
+      }
+    };
+
+    return (
+      <div
+        className={`bg-gray-50 rounded-lg p-4 ${fullWidth ? "col-span-2" : ""}`}
+      >
+        <div className="flex items-start space-x-3">
+          <Icon className="w-5 h-5 text-azulclaro mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-gray-500 uppercase mb-1">
+              {title}
+            </p>
+
+            <input
+              type={type}
+              value={inputValue}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (!isRegistered) {
+    return (
+      <div className="bg-yellow-50 p-4 mb-6 rounded-lg">
+        <p className="text-sm text-yellow-700">
+          Adicione no Sistema a empresa para adicionar Enriquecimento
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
+        <Briefcase className="w-6 h-6 text-emerald-600" />
+        <span>Enriquecimento de Dados</span>
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InfoCardEditable icon={FileText} title="Site" field="site" />
+        <InfoCardEditable icon={Briefcase} title="LinkedIn" field="linkedin" />
+        <InfoCardEditable
+          icon={Briefcase}
+          title="Instagram"
+          field="instagram"
+        />
+        <InfoCardEditable icon={Briefcase} title="Facebook" field="facebook" />
+
+        <InfoCardEditable
+          icon={Hash}
+          title="Número de empregados"
+          field="numero_empregados_estimado"
+          type="number"
+        />
+
+        <InfoCardEditable
+          icon={DollarSign}
+          title="Faturamento estimado"
+          field="faturamento_estimado"
+        />
+
+        <InfoCardEditable
+          icon={Briefcase}
+          title="Segmento comercial"
+          field="segmento_comercial"
+        />
+
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <CheckCircle className="w-5 h-5 text-azulclaro mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-500 uppercase mb-1">
+                Potencial comercial
+              </p>
+
+              <select
+                value={form.potencial_comercial}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    potencial_comercial: e.target.value,
+                  }))
+                }
+                className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm"
+              >
+                <option value="">Selecione</option>
+                <option value="baixo">Baixo</option>
+                <option value="médio">Médio</option>
+                <option value="alto">Alto</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <InfoCardEditable
+          icon={FileText}
+          title="Observações"
+          field="observacoes"
+          fullWidth
+        />
+      </div>
+
+      <div className="flex justify-end mt-4">
+        <button
+          onClick={handleSave}
+          className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+        >
+          Adicionar
+        </button>
+      </div>
+      {historico.length > 0 && (
+        <div className="mt-4 bg-blue-100 p-4 rounded-lg">
+          <h3 className="text-sm font-semibold mb-2 text-gray-700">
+            Histórico de alterações
+          </h3>
+
+          <div className="space-y-2">
+            {historico.map((item, index) => (
+              <div
+                key={index}
+                className="text-xs text-gray-600 border-b pb-1 flex justify-between items-center"
+              >
+                <p>
+                  Alterado por{" "}
+                  <span className="font-medium">
+                    {item.user?.firstName || "Desconhecido"}{" "}
+                    {item.user?.lastName || ""}
+                  </span>{" "}
+                  • {new Date(item.data).toLocaleString("pt-BR")}
+                </p>
+
+                <button
+                  onClick={() => handleDeleteHistorico(index)}
+                  className="text-red-500 hover:text-red-700 text-xs ml-2"
+                >
+                  Apagar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
