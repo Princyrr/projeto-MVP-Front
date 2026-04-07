@@ -41,7 +41,6 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 overflow-hidden">
-      {/* Efeito */}
       <div className="absolute inset-0 pointer-events-none">
         {Array.from({ length: 50 }).map((_, i) => (
           <span
@@ -56,9 +55,7 @@ export default function Login({ onLogin }) {
         ))}
       </div>
 
-      {/* CARD */}
       <div className="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-700 rounded-2xl shadow-2xl p-8">
-        {/* LOGO */}
         <div className="flex flex-col items-center mb-6">
           <img src={Logo} alt="logo" className="w-40 mb-2" />
           <h2 className="text-xl font-semibold text-white mt-6">
@@ -67,16 +64,13 @@ export default function Login({ onLogin }) {
           <p className="text-sm text-slate-400">Entre com suas credenciais</p>
         </div>
 
-        {/* ERROR */}
         {error && (
           <div className="bg-red-500/10 border border-red-500 text-red-400 text-sm rounded-lg p-3 mb-4 text-center">
             {error}
           </div>
         )}
 
-        {/* FORM */}
         <div className="space-y-4">
-          {/* EMAIL */}
           <div>
             <label className="text-sm text-slate-400">Email</label>
 
@@ -93,7 +87,6 @@ export default function Login({ onLogin }) {
             </div>
           </div>
 
-          {/* SENHA */}
           <div>
             <label className="text-sm text-slate-400">Senha</label>
 
@@ -110,7 +103,6 @@ export default function Login({ onLogin }) {
             </div>
           </div>
 
-          {/* BUTTON */}
           <button
             onClick={handleLogin}
             disabled={loading}
@@ -120,9 +112,8 @@ export default function Login({ onLogin }) {
           </button>
         </div>
 
-        {/* FOOTER */}
         <div className="mt-6 text-center text-xs text-slate-500">
-          Sistema de Inteligência de Mercado
+          Sistema de Inteligência de Empresas
         </div>
       </div>
     </div>

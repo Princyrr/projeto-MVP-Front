@@ -52,7 +52,7 @@ export default function SearchCompany({ onSearch, loading }) {
         )}
       </div>
 
-      {/* 🔹 FORMULARIO */}
+      {/*  FORMULARIO */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">

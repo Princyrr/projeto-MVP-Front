@@ -20,7 +20,6 @@ function App() {
 
   const [registeredCompanies, setRegisteredCompanies] = useState([]);
 
-  //  LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -118,7 +117,6 @@ function App() {
     }
   };
 
-  // ✏️ atualizar empresa
   const handleUpdateCompany = async (updatedCompany) => {
     try {
       const response = await fetch(
@@ -168,32 +166,35 @@ function App() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              <div className="bg-white rounded-xl p-8 text-center shadow-xl border-t-4 border-azulclaro">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-14">
+              <div className="bg-white rounded-xl p-8 text-center border-t-4 border-azulclaro shadow-[0_10px_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_30px_rgba(59,130,246,0.9)] transition-all duration-300">
                 <h3 className="text-xl font-bold">Busca Rápida</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mt-5">
                   Encontre empresas rapidamente usando CNPJ
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-8 text-center shadow-xl border-t-4 border-azulclaro">
-                <h3 className="text-xl font-bold">Dados Completos</h3>
-                <p className="text-gray-600">
-                  Informações detalhadas da empresa
+              <div className="bg-white rounded-xl p-8 text-center border-t-4 border-azulclaro shadow-[0_10px_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_30px_rgba(59,130,246,0.9)] transition-all duration-300">
+                <h3 className="text-xl font-bold ">Dados Completos</h3>
+                <p className="text-gray-600 mt-5">
+                  Cadastre, acompanhe e atualize o status de prospecção das
+                  empresas.
                 </p>
               </div>
 
-              <div className="bg-white rounded-xl p-8 text-center shadow-xl border-t-4 border-azulclaro">
+              <div className="bg-white rounded-xl p-8 text-center border-t-4 border-azulclaro shadow-[0_10px_20px_rgba(59,130,246,0.6)] hover:shadow-[0_0_30px_rgba(59,130,246,0.9)] transition-all duration-300">
                 <h3 className="text-xl font-bold">Dashboard</h3>
-                <p className="text-gray-600">Estatísticas organizadas</p>
+                <p className="text-gray-600 mt-5">
+                  Estatísticas organizadas, visualize dados estratégicos.
+                </p>
               </div>
             </div>
 
-            <div className="mt-12 flex justify-center">
+            <div className="mt-16 flex justify-center">
               <img
                 src={bannerGif}
                 alt="Banner"
-                className="w-full max-w-6xl rounded-lg"
+                className="w-full max-w-8xl rounded-lg"
               />
             </div>
           </div>
@@ -222,6 +223,10 @@ function App() {
           <Dashboard
             company={company}
             registeredCompanies={registeredCompanies}
+            onSelectCompany={(empresa) => {
+              setCompany(empresa);
+              setCurrentPage("details");
+            }}
           />
         );
       case "registered":

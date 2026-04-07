@@ -12,7 +12,6 @@ export default function Sidebar({ currentPage, onNavigate, user, onLogout }) {
 
   return (
     <div className="w-64 h-screen flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white border-r border-slate-800 shadow-xl">
-      {/* LOGO */}
       <div className="p-6 flex flex-col items-center border-b border-slate-800/60">
         <img src={Logo} alt="Logo" className="w-40 mb-2" />
       </div>
@@ -83,7 +82,6 @@ export default function Sidebar({ currentPage, onNavigate, user, onLogout }) {
         </div>
       </div>
 
-      {/* LOGOUT */}
       <div className="px-4 mb-4">
         <button
           onClick={onLogout}
@@ -94,7 +92,6 @@ export default function Sidebar({ currentPage, onNavigate, user, onLogout }) {
         </button>
       </div>
 
-      {/* FOOTER */}
       <div className="p-4 border-t border-slate-800/60 text-center">
         <p className="text-xs font-semibold text-slate-400">Observatório PB</p>
         <p className="text-[10px] text-slate-500 mt-1">Campina Grande</p>

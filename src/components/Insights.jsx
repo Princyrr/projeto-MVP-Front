@@ -6,20 +6,22 @@ export default function Insights({ cnpj, isRegistered }) {
   const [insights, setInsights] = useState([]);
   const [form, setForm] = useState({
     descricao: "",
-    categoria: "oportunidade",
+    categoria: "",
+    outraCategoria: "",
   });
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
     descricao: "",
     categoria: "",
+    outraCategoria: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // usuário logado
   const currentUser = JSON.parse(localStorage.getItem("user"));
+  currentUser?.role === "admin";
 
   const formatDateTime = (date) => {
     if (!date) return "";
@@ -60,6 +62,11 @@ export default function Insights({ cnpj, isRegistered }) {
       return;
     }
 
+    if (form.categoria === "outros" && !form.outraCategoria) {
+      setError("Digite a categoria em 'Outros'");
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -69,6 +76,8 @@ export default function Insights({ cnpj, isRegistered }) {
         body: JSON.stringify({
           descricao: form.descricao,
           categoria: form.categoria,
+          categoriaCustom:
+            form.categoria === "outros" ? form.outraCategoria : null,
           user: {
             _id: currentUser._id,
             firstName: currentUser.firstName,
@@ -85,7 +94,7 @@ export default function Insights({ cnpj, isRegistered }) {
       const newInsight = await res.json();
       setInsights([newInsight, ...insights]);
 
-      setForm({ descricao: "", categoria: "oportunidade" });
+      setForm({ descricao: "", categoria: "", outraCategoria: "" });
       setError("");
     } catch (err) {
       setError(err.message || "Erro ao adicionar insight.");
@@ -95,11 +104,17 @@ export default function Insights({ cnpj, isRegistered }) {
   };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja deletar este item?",
+    );
+    if (!confirmDelete) return;
+
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/api/insights/${id}`, {
+      await fetch(`${API_URL}/api/insights/${id}`, {
         method: "DELETE",
       });
+
       setInsights(insights.filter((i) => i._id !== id));
     } catch {
       setError("Erro ao deletar insight.");
@@ -113,6 +128,10 @@ export default function Insights({ cnpj, isRegistered }) {
       setError("Descrição é obrigatória");
       return;
     }
+    if (editForm.categoria === "outros" && !editForm.outraCategoria) {
+      setError("Digite a categoria em 'Outros'");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -123,6 +142,8 @@ export default function Insights({ cnpj, isRegistered }) {
         body: JSON.stringify({
           descricao: editForm.descricao,
           categoria: editForm.categoria,
+          categoriaCustom:
+            editForm.categoria === "outros" ? editForm.outraCategoria : null,
           user: {
             _id: currentUser._id,
             firstName: currentUser.firstName,
@@ -211,7 +232,7 @@ export default function Insights({ cnpj, isRegistered }) {
   }
 
   return (
-    <div className="mt-10 mb-10">
+    <div className="mt-2 mb-10">
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
         <FileText className="w-6 h-6 text-emerald-600" />
         Observações
@@ -231,11 +252,24 @@ export default function Insights({ cnpj, isRegistered }) {
               onChange={(e) => setForm({ ...form, categoria: e.target.value })}
               className="w-full border rounded-lg px-2 py-1 text-sm"
             >
+              <option value="">Selecione...</option>
               <option value="oportunidade">Oportunidade</option>
               <option value="dor">Dor do Cliente</option>
               <option value="risco">Risco</option>
               <option value="maturidade">Maturidade</option>
+              <option value="outros">Outros</option>
             </select>
+            {form.categoria === "outros" && (
+              <input
+                type="text"
+                placeholder="Digite a categoria"
+                value={form.outraCategoria}
+                onChange={(e) =>
+                  setForm({ ...form, outraCategoria: e.target.value })
+                }
+                className="w-full border rounded-lg px-2 py-1 text-sm mt-2"
+              />
+            )}
           </div>
         </div>
 
@@ -248,14 +282,13 @@ export default function Insights({ cnpj, isRegistered }) {
           />
         </div>
 
-        <div className="md:col-span-2 flex justify-end">
+        <div className="md:col-span-2 flex justify-end mt-3">
           <button className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold">
             {loading ? "Salvando..." : "Adicionar"}
           </button>
         </div>
       </form>
 
-      {/* LISTA COM AUTOR E DATA */}
       <div className="space-y-3 mb-20">
         {insights.map((i) => (
           <div
@@ -276,7 +309,9 @@ export default function Insights({ cnpj, isRegistered }) {
                         : "text-purple-600"
                 }`}
               >
-                {i.categoria}
+                {i.categoria === "outros"
+                  ? i.categoriaCustom || "Outros"
+                  : i.categoria}
               </span>
               <span className="text-xs text-gray-400">
                 {formatDateTime(i.criado_em)}
@@ -299,12 +334,27 @@ export default function Insights({ cnpj, isRegistered }) {
                   }
                   className="border rounded p-2"
                 >
+                  <option value="">Selecione...</option>
                   <option value="oportunidade">Oportunidade</option>
                   <option value="dor">Dor do Cliente</option>
                   <option value="risco">Risco</option>
                   <option value="maturidade">Maturidade</option>
+                  <option value="outros">Outros</option>
                 </select>
-
+                {editForm.categoria === "outros" && (
+                  <input
+                    type="text"
+                    placeholder="Digite a categoria"
+                    value={editForm.outraCategoria}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        outraCategoria: e.target.value,
+                      })
+                    }
+                    className="w-full border rounded-lg px-2 py-1 text-sm mt-2"
+                  />
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleUpdate(i._id)}
@@ -314,7 +364,7 @@ export default function Insights({ cnpj, isRegistered }) {
                   </button>
                   <button
                     onClick={() => setEditingId(null)}
-                    className="bg-gray-400 text-white px-3 py-1 rounded text-xs"
+                    className="bg-gray-400 text-white px-3 py-1 rounded text-xs "
                   >
                     Cancelar
                   </button>
@@ -324,28 +374,39 @@ export default function Insights({ cnpj, isRegistered }) {
               <>
                 <p className="text-sm text-gray-800 mb-1">{i.descricao}</p>
                 <p className="text-xs text-gray-500 mb-2">
-                  👤 {i.createdBy?.firstName} {i.createdBy?.lastName}
+                  👤 Adicionado por {i.createdBy?.firstName}{" "}
+                  {i.createdBy?.lastName}
                 </p>
 
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setEditingId(i._id);
-                      setEditForm({
-                        descricao: i.descricao,
-                        categoria: i.categoria,
-                      });
-                    }}
-                    className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(i._id)}
-                    className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  >
-                    Deletar
-                  </button>
+                  {currentUser?.role === "admin" && (
+                    <button
+                      onClick={() => {
+                        const confirmEdit = window.confirm(
+                          "Deseja realmente editar este item?",
+                        );
+                        if (!confirmEdit) return;
+
+                        setEditingId(i._id);
+                        setEditForm({
+                          descricao: i.descricao,
+                          categoria: i.categoria,
+                          outraCategoria: "",
+                        });
+                      }}
+                      className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                    >
+                      Editar
+                    </button>
+                  )}
+                  {currentUser?.role === "admin" && (
+                    <button
+                      onClick={() => handleDelete(i._id)}
+                      className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      Deletar
+                    </button>
+                  )}
                 </div>
               </>
             )}

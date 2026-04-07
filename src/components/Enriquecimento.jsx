@@ -70,11 +70,7 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
             lastName: currentUser?.lastName,
           },
           ...form,
-          potencial_comercial: ["baixo", "médio", "alto"].includes(
-            form.potencial_comercial,
-          )
-            ? form.potencial_comercial
-            : undefined,
+          potencial_comercial: form.potencial_comercial || null,
         }),
       });
 
@@ -89,6 +85,12 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
     }
   };
   const handleDeleteHistorico = async (index) => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja apagar este item do histórico?",
+    );
+
+    if (!confirmDelete) return;
+
     try {
       const res = await fetch(
         `${API_URL}/api/enriquecimento/remover-historico`,
@@ -103,13 +105,11 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
       );
 
       const data = await res.json();
-
       setHistorico(data.historico_atualizacao || []);
     } catch (err) {
       console.error("Erro ao remover:", err);
     }
   };
-
   const InfoCardEditable = ({
     icon: Icon,
     title,
@@ -121,15 +121,35 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
     const [inputValue, setInputValue] = useState(form[field] ?? "");
 
     useEffect(() => {
-      setInputValue(form[field] ?? "");
+      if (field === "faturamento_estimado") {
+        if (form[field]) {
+          const formatted = new Intl.NumberFormat("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(form[field]);
+
+          setInputValue(formatted);
+        } else {
+          setInputValue("");
+        }
+      } else {
+        setInputValue(form[field] ?? "");
+      }
     }, [form[field]]);
 
     const handleChange = (e) => {
       let val = e.target.value;
 
       if (field === "faturamento_estimado") {
-        val = val.replace(/[^0-9.,]/g, "");
-      } else if (type === "number") {
+        const numbers = val.replace(/\D/g, "");
+
+        const formatted = new Intl.NumberFormat("pt-BR").format(numbers);
+
+        setInputValue(formatted);
+        return;
+      }
+
+      if (type === "number") {
         val = val.replace(/\D/g, "");
       }
 
@@ -138,9 +158,7 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
 
     const handleBlur = () => {
       if (field === "faturamento_estimado" && inputValue) {
-        const numericValue = Number(
-          inputValue.replace(/\./g, "").replace(",", "."),
-        );
+        const numericValue = Number(inputValue.replace(/\./g, ""));
 
         if (!numericValue) {
           setForm((prev) => ({ ...prev, [field]: "" }));
@@ -196,13 +214,13 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
   }
 
   return (
-    <div className="mb-8">
+    <div className="mb-6 ">
       <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
         <Briefcase className="w-6 h-6 text-emerald-600" />
         <span>Enriquecimento de Dados</span>
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl p-4">
         <InfoCardEditable icon={FileText} title="Site" field="site" />
         <InfoCardEditable icon={Briefcase} title="LinkedIn" field="linkedin" />
         <InfoCardEditable
@@ -269,43 +287,11 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
       <div className="flex justify-end mt-4">
         <button
           onClick={handleSave}
-          className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+          className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold mr-4 "
         >
           Adicionar
         </button>
       </div>
-      {historico.length > 0 && (
-        <div className="mt-4 bg-blue-100 p-4 rounded-lg">
-          <h3 className="text-sm font-semibold mb-2 text-gray-700">
-            Histórico de alterações
-          </h3>
-
-          <div className="space-y-2">
-            {historico.map((item, index) => (
-              <div
-                key={index}
-                className="text-xs text-gray-600 border-b pb-1 flex justify-between items-center"
-              >
-                <p>
-                  Alterado por{" "}
-                  <span className="font-medium">
-                    {item.user?.firstName || "Desconhecido"}{" "}
-                    {item.user?.lastName || ""}
-                  </span>{" "}
-                  • {new Date(item.data).toLocaleString("pt-BR")}
-                </p>
-
-                <button
-                  onClick={() => handleDeleteHistorico(index)}
-                  className="text-red-500 hover:text-red-700 text-xs ml-2"
-                >
-                  Apagar
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

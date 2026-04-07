@@ -1,67 +1,60 @@
 import { useState, useEffect } from "react";
-import { Building2, TrendingUp, Activity, Users } from "lucide-react";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  TrendingUp,
+  AlertTriangle,
+  Activity,
+  Brain,
+  Building2,
+  Users,
+} from "lucide-react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import dashboardGif from "../assets/dashboard.gif";
 import { API_URL } from "../config";
+import PotencialModal from "./PotencialModal";
 
-export default function Dashboard({ company, registeredCompanies }) {
+export default function Dashboard({
+  company,
+  registeredCompanies,
+  onSelectCompany,
+}) {
+  const [openPotencialModal, setOpenPotencialModal] = useState(false);
+  const [enriquecimentos, setEnriquecimentos] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [contacts, setContacts] = useState([]);
+  const [potencialStats, setPotencialStats] = useState(null);
+  const [insightsStats, setInsightsStats] = useState(null);
 
   useEffect(() => {
     fetch(`${API_URL}/api/contacts`)
       .then((res) => res.json())
-      .then((data) => setContacts(data));
+      .then(setContacts);
   }, []);
 
-  const formatDateTime = (date) => {
-    if (!date) return "";
-    return new Date(date).toLocaleString("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-  };
+  useEffect(() => {
+    fetch(`${API_URL}/api/enriquecimento/stats/potencial`)
+      .then((res) => res.json())
+      .then(setPotencialStats);
+  }, []);
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case "01":
-        return "NULA";
-      case "02":
-        return "ATIVA";
-      case "03":
-        return "SUSPENSA";
-      case "04":
-        return "INAPTA";
-      case "08":
-        return "BAIXADA";
-      default:
-        return status;
-    }
-  };
+  useEffect(() => {
+    fetch(`${API_URL}/api/insights/stats`)
+      .then((res) => res.json())
+      .then(setInsightsStats)
+      .catch(() => setInsightsStats(null));
+  }, []);
 
-  const StatCard = ({ icon: Icon, title, value, color = "emerald" }) => (
-    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-        <div className={`bg-${color}-100 p-3 rounded-lg`}>
-          <Icon className={`w-6 h-6 text-${color}-600`} />
-        </div>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    fetch(`${API_URL}/api/enriquecimento`)
+      .then((res) => res.json())
+      .then(setEnriquecimentos);
+  }, []);
 
-  // 🔹 MÉTRICAS
+  const formatDateTime = (date) => new Date(date).toLocaleString("pt-BR");
+
   const totalEmpresas = registeredCompanies?.length || 0;
   const totalContatos = contacts.length;
   const empresasComContato = new Set(contacts.map((c) => c.cnpj)).size;
+  const empresasSemContato = totalEmpresas - empresasComContato;
 
   const statusCount = registeredCompanies?.reduce((acc, empresa) => {
     const status = empresa.status_prospeccao || "Não definido";
@@ -69,7 +62,20 @@ export default function Dashboard({ company, registeredCompanies }) {
     return acc;
   }, {});
 
-  const statusLabel = getStatusLabel(company?.situacao_cadastral);
+  const pieData = Object.entries(statusCount || {}).map(([status, count]) => ({
+    name: status,
+    value: count,
+  }));
+
+  const COLORS = [
+    "#4F46E5",
+    "#06B6D4",
+    "#22C55E",
+    "#84CC16",
+    "#F59E0B",
+    "#F97316",
+    "#EF4444",
+  ];
 
   const ultimosContatos = [...contacts]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -77,168 +83,345 @@ export default function Dashboard({ company, registeredCompanies }) {
 
   const getEmpresaNome = (cnpj) => {
     const empresa = registeredCompanies?.find((e) => e.cnpj === cnpj);
-
-    if (empresa) {
-      return empresa.nome_fantasia || empresa.razao_social;
-    }
-
-    return `Empresa não carregada (${cnpj})`;
+    return empresa?.nome_fantasia || empresa?.razao_social || cnpj;
   };
 
-  const pieData = Object.entries(statusCount || {}).map(([status, count]) => ({
-    name: getStatusLabel(status),
-    value: count,
-  }));
+  const insightConfig = {
+    oportunidade: {
+      label: "Oportunidades",
+      color: "bg-green-500",
+      icon: TrendingUp,
+    },
+    dor: {
+      label: "Dores",
+      color: "bg-red-500",
+      icon: AlertTriangle,
+    },
+    risco: {
+      label: "Riscos",
+      color: "bg-yellow-500",
+      icon: Activity,
+    },
+    maturidade: {
+      label: "Maturidade",
+      color: "bg-purple-500",
+      icon: Brain,
+    },
+  };
 
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#AA336A"];
+  const total =
+    (insightsStats?.oportunidade || 0) +
+    (insightsStats?.dor || 0) +
+    (insightsStats?.risco || 0) +
+    (insightsStats?.maturidade || 0);
 
+  const destaque = insightsStats
+    ? Object.entries(insightConfig).reduce((a, b) =>
+        (insightsStats[a[0]] || 0) > (insightsStats[b[0]] || 0) ? a : b,
+      )
+    : null;
+
+  const StatCard = ({ icon: Icon, title, value, color }) => (
+    <div className="bg-white rounded-2xl p-6 border-t-4 border-azulclaro  shadow-[0_8px_25px_rgba(59,130,246,0.25)] transition">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-gray-400 text-sm">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+
+        <div className={`p-3 rounded-xl ${color}`}>
+          <Icon className="text-white w-5 h-5" />
+        </div>
+      </div>
+    </div>
+  );
+
+  const empresasComPotencial = registeredCompanies.map((empresa) => {
+    const enriquecimento = enriquecimentos.find((e) => e.cnpj === empresa.cnpj);
+
+    return {
+      ...empresa,
+      potencial_comercial: enriquecimento?.potencial_comercial || null,
+    };
+  });
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-      <p className="text-gray-600 mb-8">
-        Visão geral da prospecção de empresas
-      </p>
+    <div className="bg-gray-50 min-h-screen px-8 py-10">
+      <div className="relative mb-10">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-40"></div>
 
-      {/* 🔹 CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+              Dashboard
+              <span className="text-sm bg-indigo-100 text-indigo-600 px-2 py-1 rounded-md">
+                visão geral
+              </span>
+            </h1>
+
+            <p className="text-gray-500 mt-2 max-w-md">
+              Acompanhe métricas e oportunidades de forma clara e rápida.
+            </p>
+          </div>
+        </div>
+
+        <img
+          src={dashboardGif}
+          alt="Dashboard"
+          className="hidden md:block absolute -top-10 right-6 w-[330px] h-auto drop-shadow-xl"
+        />
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <StatCard
           icon={Building2}
-          title="Empresas cadastradas"
+          title="Empresas"
           value={totalEmpresas}
+          color="bg-indigo-500"
         />
-
         <StatCard
           icon={Users}
-          title="Total de contatos"
-          value={totalContatos}
-          color="blue"
+          title="Com contato"
+          value={empresasComContato}
+          color="bg-green-500"
         />
 
         <StatCard
           icon={Activity}
-          title="Empresas com contato"
-          value={empresasComContato}
-          color="green"
+          title="Sem contato"
+          value={empresasSemContato}
+          color="bg-red-500"
         />
-
         <StatCard
           icon={TrendingUp}
           title="Status atual"
           value={company?.status_prospeccao || "N/A"}
-          color="purple"
+          color="bg-purple-500"
         />
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <h2 className="text-lg font-bold mb-4">
-          Status das Empresas Cadastradas
-        </h2>
-        {pieData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                label
-              >
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+      <div className="grid lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-[0_10px_30px_rgba(59,130,246,0.15)] transition">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-6">
+            🟢 🔵 🟠 Status da Prospecção
+          </h2>
+
+          {pieData.length > 0 ? (
+            <div className="grid md:grid-cols-2 items-center">
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      innerRadius={60}
+                      outerRadius={100}
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="space-y-3">
+                {pieData.map((item, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                      />
+                      <span className="text-sm text-gray-600">{item.name}</span>
+                    </div>
+                    <span className="font-semibold">{item.value}</span>
+                  </div>
                 ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" height={36} />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-gray-500">Nenhum dado para mostrar</p>
-        )}
-      </div>
-
-      {/* 🔹 FUNIL */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <h2 className="text-lg font-bold mb-4">Funil de Prospecção</h2>
-
-        <div className="space-y-2">
-          {statusCount &&
-            Object.entries(statusCount).map(([status, count]) => (
-              <div key={status} className="flex justify-between border-b pb-2">
-                <span className="text-gray-600">{status}</span>
-                <span className="font-semibold">{count}</span>
               </div>
-            ))}
+            </div>
+          ) : (
+            <p className="text-gray-400">Sem dados</p>
+          )}
+        </div>
+
+        <div
+          onClick={() => setOpenPotencialModal(true)}
+          className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-[0_10px_30px_rgba(59,130,246,0.15)] transition cursor-pointer "
+        >
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-6">
+            🚀 Potencial Comercial
+          </h2>
+
+          {potencialStats ? (
+            <div className="space-y-5">
+              {["alto", "medio", "baixo"].map((tipo) => {
+                const value = potencialStats[tipo] || 0;
+                const percent = totalEmpresas
+                  ? (value / totalEmpresas) * 100
+                  : 0;
+
+                const colorMap = {
+                  alto: "bg-green-500",
+                  medio: "bg-yellow-500",
+                  baixo: "bg-red-500",
+                };
+
+                const labelMap = {
+                  alto: "Alto",
+                  medio: "Médio",
+                  baixo: "Baixo",
+                };
+
+                return (
+                  <div key={tipo}>
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700">
+                          {labelMap[tipo]}
+                        </span>
+
+                        <div
+                          className={`w-2 h-2 rounded-full ${colorMap[tipo]}`}
+                        />
+                      </div>
+
+                      <span className="text-sm text-gray-500">
+                        {value} empresas
+                      </span>
+                    </div>
+
+                    <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`${colorMap[tipo]} h-2 rounded-full transition-all duration-500`}
+                        style={{ width: `${percent}%` }}
+                      />
+
+                      <div
+                        className="absolute top-0 left-0 h-2 rounded-full opacity-30 blur-sm"
+                        style={{
+                          width: `${percent}%`,
+                          backgroundColor: "currentColor",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-400">Sem dados</p>
+          )}
         </div>
       </div>
 
-      {/* 🔹 ÚLTIMOS CONTATOS */}
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <h2 className="text-lg font-bold mb-4">Últimos contatos adicionados</h2>
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-[0_10px_30px_rgba(59,130,246,0.15)] transition mb-10">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-6">
+          📊 Insights Estratégicos
+        </h2>
 
-        {ultimosContatos.length > 0 ? (
-          <div className="space-y-3">
-            {ultimosContatos.map((c) => (
-              <div key={c._id} className="border-b pb-2 flex justify-between">
-                <div>
-                  <p className="font-semibold">{c.nome}</p>
-                  <p className="text-sm text-gray-600">
-                    {getEmpresaNome(c.cnpj)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {c.cargo || "Sem cargo"}
-                  </p>
-                </div>
+        {insightsStats ? (
+          <div className="grid md:grid-cols-4 gap-5">
+            {Object.entries(insightConfig).map(([key, item]) => {
+              const value = insightsStats[key] || 0;
+              const percent = total ? (value / total) * 100 : 0;
+              const Icon = item.icon;
 
-                <div className="text-xs text-gray-400">
-                  {formatDateTime(c.createdAt)}
+              const isHighlight = destaque && destaque[0] === key;
+
+              return (
+                <div
+                  key={key}
+                  className={`relative p-5 rounded-2xl border transition 
+          ${
+            isHighlight
+              ? "bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] scale-[1.02]"
+              : "bg-gray-50 hover:bg-white hover:shadow-md"
+          }`}
+                >
+                  {isHighlight && (
+                    <span className="absolute top-2 right-2 text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded">
+                      destaque
+                    </span>
+                  )}
+
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`p-2 rounded-lg ${item.color}`}>
+                      <Icon className="text-white w-4 h-4" />
+                    </div>
+                    <p className="text-sm text-gray-600">{item.label}</p>
+                  </div>
+
+                  <p className="text-3xl font-bold text-gray-900">{value}</p>
+
+                  <p className="text-xs text-gray-400 mb-3">
+                    {percent.toFixed(1)}% do total
+                  </p>
+
+                  <div className="w-full bg-gray-200 h-1.5 rounded-full">
+                    <div
+                      className={`${item.color} h-1.5 rounded-full transition-all`}
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <p className="text-gray-500">Nenhum contato cadastrado ainda</p>
+          <p className="text-gray-400">Sem insights ainda</p>
         )}
       </div>
 
-      {/* 🔹 ÚLTIMA EMPRESA */}
-      {company ? (
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-lg font-bold mb-4">Última empresa consultada</h2>
+      <div className="grid lg:grid-cols-2 gap-6 mb-10">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-[0_10px_30px_rgba(59,130,246,0.15)] transition">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-6">
+            📞 Últimos contatos
+          </h2>
 
-          <div className="space-y-2">
-            <p>
-              <strong>Razão:</strong> {company.razao_social}
-            </p>
-            <p>
-              <strong>CNPJ:</strong> {company.cnpj}
-            </p>
-            <p>
-              <strong>Cidade:</strong> {company.municipio}
-            </p>
-            <p>
-              <strong>Status Receita:</strong>{" "}
-              <span
-                className={
-                  statusLabel === "ATIVA" ? "text-green-600" : "text-red-600"
-                }
-              >
-                {statusLabel}
+          {ultimosContatos.map((c) => (
+            <div
+              key={c._id}
+              className="flex justify-between items-center py-3 border-b last:border-none hover:bg-gray-50 px-2 rounded-lg transition"
+            >
+              <div>
+                <p className="font-medium">{c.nome}</p>
+                <p className="text-sm text-gray-500">
+                  {getEmpresaNome(c.cnpj)}
+                </p>
+              </div>
+
+              <span className="text-xs text-gray-400">
+                {formatDateTime(c.createdAt)}
               </span>
-            </p>
-          </div>
+            </div>
+          ))}
         </div>
-      ) : (
-        <div className="bg-white p-10 rounded-xl text-center shadow">
-          <Building2 className="mx-auto mb-4 text-gray-300" size={40} />
-          <p className="text-gray-500">Nenhuma empresa consultada ainda</p>
+
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-[0_10px_30px_rgba(59,130,246,0.15)] transition">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-6">
+            🏭 Última empresa
+          </h2>
+
+          {company ? (
+            <>
+              <p className="font-medium">{company.razao_social}</p>
+              <p className="text-sm text-gray-500">{company.municipio}</p>
+            </>
+          ) : (
+            <p className="text-gray-400">Nenhuma empresa ainda</p>
+          )}
         </div>
-      )}
+      </div>
+      <PotencialModal
+        open={openPotencialModal}
+        onClose={() => setOpenPotencialModal(false)}
+        empresas={empresasComPotencial}
+        onSelectCompany={(empresa) => {
+          onSelectCompany(empresa);
+          setOpenPotencialModal(false);
+        }}
+      />
     </div>
   );
 }

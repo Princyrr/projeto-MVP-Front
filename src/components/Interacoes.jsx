@@ -15,6 +15,7 @@ export default function Interacoes({ cnpj, isRegistered }) {
   const [error, setError] = useState("");
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
+  currentUser?.role === "admin";
 
   const formatDateTime = (date) =>
     new Date(date).toLocaleString("pt-BR", {
@@ -83,9 +84,15 @@ export default function Interacoes({ cnpj, isRegistered }) {
   };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja deletar esta interação?",
+    );
+    if (!confirmDelete) return;
+
     await fetch(`${API_URL}/api/interacoes/${id}`, {
       method: "DELETE",
     });
+
     setInteracoes(interacoes.filter((i) => i._id !== id));
   };
 
@@ -144,7 +151,7 @@ export default function Interacoes({ cnpj, isRegistered }) {
   }
 
   return (
-    <div className="mt-10">
+    <div className="mt-6">
       <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
         <Phone className="w-6 h-6 text-emerald-600" />
         Interações
@@ -156,7 +163,6 @@ export default function Interacoes({ cnpj, isRegistered }) {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white rounded-xl p-4"
       >
-        {/* SELECT */}
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center gap-2">
             <Tag className="w-5 h-5 text-azulclaro" />
@@ -194,7 +200,7 @@ export default function Interacoes({ cnpj, isRegistered }) {
         <div className="md:col-span-2 flex justify-end">
           <button
             type="submit"
-            className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+            className="bg-azulclaro hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold mt-3"
             disabled={loading}
           >
             {editingId ? "Atualizar" : "Adicionar"}
@@ -202,58 +208,59 @@ export default function Interacoes({ cnpj, isRegistered }) {
         </div>
       </form>
 
-      {/* LISTA */}
       <div className="space-y-4 mb-20">
         {interacoes.map((i) => (
           <div
             key={i._id || Math.random().toString(36).substr(2, 9)}
-            className="bg-blue-100 border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition"
+            className="bg-blue-50 border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition"
           >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <p className="text-xs text-gray-400">
-                  {formatDateTime(i.data)}
-                </p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {i.user?.firstName || currentUser?.firstName}{" "}
-                  {i.user?.lastName || currentUser?.lastName}
-                </p>
-              </div>
+            <div className="flex justify-between mb-2">
+              <span className="text-xs font-semibold uppercase text-gray-600">
+                Interação por: {i.tipo}
+              </span>
 
-              <span className="text-xs font-semibold bg-blue-700 text-blue-100 px-2 py-1 rounded-full">
-                {(i.tipo || "LIGAÇÃO").toUpperCase()}
+              <span className="text-xs text-gray-400">
+                {formatDateTime(i.data)}
               </span>
             </div>
 
-            {/* Conteúdo */}
-            <div className="mb-3">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {i.resumo}
+            <p className="text-sm text-gray-800 mb-1">{i.resumo}</p>
+
+            {i.resultado && (
+              <p className="text-xs text-blue-500 mb-2">
+                Resultado: {i.resultado}
               </p>
+            )}
 
-              {i.resultado && (
-                <p className="text-xs text-green-600 mt-2 font-medium">
-                  Resultado: {i.resultado}
-                </p>
-              )}
-            </div>
+            <p className="text-xs text-gray-500 mb-2">
+              👤 Adicionado por {i.user?.firstName || currentUser?.firstName}{" "}
+              {i.user?.lastName || currentUser?.lastName}
+            </p>
 
-            {/* Ações */}
             <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(i)}
-                className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md transition"
-              >
-                Editar
-              </button>
+              {currentUser?.role === "admin" && (
+                <button
+                  onClick={() => {
+                    const confirmEdit = window.confirm(
+                      "Deseja realmente editar esta interação?",
+                    );
+                    if (!confirmEdit) return;
 
-              <button
-                onClick={() => handleDelete(i._id)}
-                className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md transition"
-              >
-                Deletar
-              </button>
+                    handleEdit(i);
+                  }}
+                  className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md transition"
+                >
+                  Editar
+                </button>
+              )}
+              {currentUser?.role === "admin" && (
+                <button
+                  onClick={() => handleDelete(i._id)}
+                  className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md transition"
+                >
+                  Deletar
+                </button>
+              )}
             </div>
           </div>
         ))}
