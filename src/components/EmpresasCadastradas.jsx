@@ -73,7 +73,7 @@ export default function EmpresasCadastradas({ empresas, onSelectCompany }) {
   }, [empresas, search, filters]);
 
   return (
-    <div className="max-w-7xl mx-auto mt-10 px-6">
+    <div className="max-w-7xl mx-auto mt-10 px-6 pt-12 md:pt-10">
       {/* HEADER */}
       <div className="relative mb-10">
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm overflow-hidden flex items-center justify-between">

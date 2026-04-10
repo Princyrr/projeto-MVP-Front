@@ -32,10 +32,14 @@ export default function SearchCompany({ onSearch, loading }) {
   };
 
   return (
-    <div>
+    <div className="pt-16 md:pt-0">
+      {/* BANNER */}
       <div
-        className="relative mx-auto  mt-8"
-        style={{ width: "900px", height: "450px" }}
+        className="
+          relative mx-auto mt-6 md:mt-8
+          w-full max-w-[900px]
+          h-[220px] sm:h-[320px] md:h-[450px]
+        "
       >
         <img
           src={banner1}
@@ -52,19 +56,19 @@ export default function SearchCompany({ onSearch, loading }) {
         )}
       </div>
 
-      {/*  FORMULARIO */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      {/* FORMULÁRIO */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+        <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Buscar Empresa por CNPJ
             </h2>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Digite o CNPJ da empresa para consultar suas informações
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             <div>
               <label
                 htmlFor="cnpj"
@@ -72,6 +76,7 @@ export default function SearchCompany({ onSearch, loading }) {
               >
                 CNPJ
               </label>
+
               <div className="relative">
                 <input
                   type="text"

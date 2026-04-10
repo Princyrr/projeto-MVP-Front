@@ -145,7 +145,7 @@ export default function Dashboard({
     };
   });
   return (
-    <div className="bg-gray-50 min-h-screen px-8 py-10">
+    <div className="bg-gray-50 min-h-screen px-8 py-10 pt-20 md:pt-10">
       <div className="relative mb-10">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full blur-3xl opacity-40"></div>

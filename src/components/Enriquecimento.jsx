@@ -181,7 +181,7 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
 
     return (
       <div
-        className={`bg-gray-50 rounded-lg p-4 ${fullWidth ? "col-span-2" : ""}`}
+        className={`bg-gray-50 rounded-lg p-4 w-full ${fullWidth ? "md:col-span-2" : ""}`}
       >
         <div className="flex items-start space-x-3">
           <Icon className="w-5 h-5 text-azulclaro mt-0.5 flex-shrink-0" />
@@ -195,7 +195,7 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
               value={inputValue}
               onChange={handleChange}
               onBlur={handleBlur}
-              className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 md:px-2 md:py-1 text-sm md:text-sm"
             />
           </div>
         </div>
@@ -214,13 +214,13 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
   }
 
   return (
-    <div className="mb-6 ">
+    <div className="mb-6 px-3 sm:px-0">
       <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center space-x-2">
         <Briefcase className="w-6 h-6 text-emerald-600" />
         <span>Enriquecimento de Dados</span>
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl p-3 sm:p-4">
         <InfoCardEditable icon={FileText} title="Site" field="site" />
         <InfoCardEditable icon={Briefcase} title="LinkedIn" field="linkedin" />
         <InfoCardEditable

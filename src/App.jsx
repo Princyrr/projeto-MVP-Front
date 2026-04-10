@@ -155,7 +155,7 @@ function App() {
     switch (currentPage) {
       case "home":
         return (
-          <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="max-w-7xl mx-auto px-6 py-12 pt-20 md:pt-10">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
                 Bem-vindo ao Sistema de Consulta de Empresas

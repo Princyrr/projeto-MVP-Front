@@ -70,7 +70,7 @@ export default function CompanyDetails({
 
   if (!company) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12 ">
         <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
           <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-700">
@@ -168,7 +168,7 @@ export default function CompanyDetails({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12 ">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 pt-20 md:pt-10">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-gradient-to-r from-azulescuro to-azulescuro p-8 text-white">
           <div className="flex items-start justify-between">
