@@ -8,7 +8,7 @@ import {
   Users,
 } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import dashboardGif from "../assets/dashboard.gif";
+import dashboardGif from "../assets/dashboard.png";
 import { API_URL } from "../config";
 import PotencialModal from "./PotencialModal";
 

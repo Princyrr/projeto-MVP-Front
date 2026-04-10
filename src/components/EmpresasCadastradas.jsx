@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Search, Filter } from "lucide-react";
-import dashboardGif from "../assets/dashboard1.gif";
+import dashboardGif from "../assets/dashboard3.gif";
 
 export default function EmpresasCadastradas({ empresas, onSelectCompany }) {
   const [search, setSearch] = useState("");
@@ -91,7 +91,7 @@ export default function EmpresasCadastradas({ empresas, onSelectCompany }) {
         <img
           src={dashboardGif}
           alt="Dashboard"
-          className="hidden md:block absolute right-2 -top-20 w-[380px] h-auto drop-shadow-xl"
+          className="hidden md:block absolute right-2 -top-16 w-[340px] h-auto "
         />
       </div>
 

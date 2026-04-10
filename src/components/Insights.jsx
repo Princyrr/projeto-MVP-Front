@@ -32,22 +32,50 @@ export default function Insights({ cnpj, isRegistered }) {
   };
 
   useEffect(() => {
-    if (!isRegistered) return;
-    fetchInsights();
-  }, [cnpj, isRegistered]);
+    if (!isRegistered || !cnpj) return;
 
-  const fetchInsights = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${API_URL}/api/insights/${cnpj}`);
-      const data = await res.json();
-      setInsights(data);
-    } catch {
-      setError("Erro ao carregar insights.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    let isMounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch(`${API_URL}/api/insights/${cnpj}`);
+
+        if (!res.ok) {
+          console.warn("API respondeu com erro:", res.status);
+
+          if (isMounted) {
+            setInsights([]);
+          }
+          return;
+        }
+
+        const data = await res.json();
+
+        if (isMounted) {
+          setInsights(data || []);
+        }
+      } catch (err) {
+        console.warn("Erro silencioso:", err.message);
+
+        if (isMounted) {
+          setInsights([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cnpj, isRegistered]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

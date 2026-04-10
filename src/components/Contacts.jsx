@@ -51,11 +51,20 @@ export default function Contacts({ cnpj, isRegistered }) {
   const fetchContacts = async () => {
     try {
       setLoading(true);
+
       const res = await fetch(`${API_URL}/api/companies/${cnpj}/contacts`);
+
+      if (!res.ok) {
+        console.warn("Erro na API:", res.status);
+        setHistorico([]);
+        return;
+      }
+
       const data = await res.json();
       setHistorico(data || []);
-    } catch {
-      setError("Erro ao carregar contatos.");
+    } catch (err) {
+      console.warn("Erro silencioso:", err.message);
+      setHistorico([]);
     } finally {
       setLoading(false);
     }

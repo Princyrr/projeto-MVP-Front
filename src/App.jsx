@@ -5,7 +5,7 @@ import CompanyDetails from "./components/CompanyDetails";
 import Dashboard from "./components/Dashboard";
 import EmpresasCadastradas from "./components/EmpresasCadastradas";
 import Login from "./components/Login";
-import bannerGif from "./assets/bannergif1.gif";
+import bannerGif from "./assets/bannergif2.gif";
 import { API_URL } from "./config";
 
 function App() {
@@ -37,7 +37,6 @@ function App() {
     if (page === "search") setError(null);
   };
 
-  // 🔍 buscar empresa
   const handleSearch = async (cnpj) => {
     setLoading(true);
     setError(null);
@@ -190,11 +189,11 @@ function App() {
               </div>
             </div>
 
-            <div className="mt-16 flex justify-center">
+            <div className="flex justify-center">
               <img
                 src={bannerGif}
                 alt="Banner"
-                className="w-full max-w-8xl rounded-lg"
+                className="w-full max-w-6xl rounded-lg"
               />
             </div>
           </div>
