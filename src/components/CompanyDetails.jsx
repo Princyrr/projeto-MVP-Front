@@ -158,13 +158,33 @@ export default function CompanyDetails({
   };
 
   const handleDeleteStatus = async (histId) => {
-    const response = await fetch(
-      `${API_URL}/companies/${company._id}/historico/${histId}`,
-      { method: "DELETE" },
+    const confirmDelete = window.confirm(
+      "Tem certeza que deseja apagar esse histórico?",
     );
 
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/companies/${company._id}/historico/${histId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const err = await response.json();
+      console.error("Erro DELETE:", err);
+      return;
+    }
+
     const updatedCompany = await response.json();
-    setHistoricoStatus(updatedCompany.historico_status);
+    setHistoricoStatus(updatedCompany.historico_status || []);
   };
 
   return (

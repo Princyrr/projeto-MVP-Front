@@ -3,6 +3,7 @@ import { Phone, FileText, CheckCircle, Tag } from "lucide-react";
 import { API_URL } from "../config";
 
 export default function Interacoes({ cnpj, isRegistered }) {
+  const token = localStorage.getItem("token");
   const [interacoes, setInteracoes] = useState([]);
   const [form, setForm] = useState({
     tipo: "ligacao",
@@ -26,7 +27,11 @@ export default function Interacoes({ cnpj, isRegistered }) {
   useEffect(() => {
     if (!isRegistered) return;
 
-    fetch(`${API_URL}/api/interacoes/${cnpj}`)
+    fetch(`${API_URL}/api/interacoes/${cnpj}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => setInteracoes(data));
   }, [cnpj, isRegistered]);
@@ -54,7 +59,10 @@ export default function Interacoes({ cnpj, isRegistered }) {
       if (editingId) {
         const res = await fetch(`${API_URL}/api/interacoes/${editingId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
 
@@ -66,7 +74,10 @@ export default function Interacoes({ cnpj, isRegistered }) {
       } else {
         const res = await fetch(`${API_URL}/api/interacoes/${cnpj}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
 
@@ -91,6 +102,9 @@ export default function Interacoes({ cnpj, isRegistered }) {
 
     await fetch(`${API_URL}/api/interacoes/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     setInteracoes(interacoes.filter((i) => i._id !== id));

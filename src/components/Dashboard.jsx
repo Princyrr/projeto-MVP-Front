@@ -17,6 +17,15 @@ export default function Dashboard({
   registeredCompanies,
   onSelectCompany,
 }) {
+  const token = localStorage.getItem("token");
+
+  const authFetch = (url) => {
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
   const [openPotencialModal, setOpenPotencialModal] = useState(false);
   const [enriquecimentos, setEnriquecimentos] = useState([]);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -25,26 +34,26 @@ export default function Dashboard({
   const [insightsStats, setInsightsStats] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/contacts`)
+    authFetch(`${API_URL}/api/contacts`)
       .then((res) => res.json())
       .then(setContacts);
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/enriquecimento/stats/potencial`)
+    authFetch(`${API_URL}/api/enriquecimento/stats/potencial`)
       .then((res) => res.json())
       .then(setPotencialStats);
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/insights/stats`)
+    authFetch(`${API_URL}/api/insights/stats`)
       .then((res) => res.json())
       .then(setInsightsStats)
       .catch(() => setInsightsStats(null));
   }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/enriquecimento`)
+    authFetch(`${API_URL}/api/enriquecimento`)
       .then((res) => res.json())
       .then(setEnriquecimentos);
   }, []);

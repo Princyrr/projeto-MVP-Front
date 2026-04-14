@@ -25,10 +25,15 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
   useEffect(() => {
     const fetchEnriquecimento = async () => {
       if (!company?.cnpj) return;
-
+      const token = localStorage.getItem("token");
       try {
         const res = await fetch(
           `${API_URL}/api/enriquecimento/${company.cnpj}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
         const data = await res.json();
 
@@ -58,11 +63,14 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
 
   const handleSave = async () => {
     if (!company?.cnpj) return;
-
+    const token = localStorage.getItem("token");
     try {
       const res = await fetch(`${API_URL}/api/enriquecimento`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           cnpj: company.cnpj,
           user: {
@@ -90,13 +98,16 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
     );
 
     if (!confirmDelete) return;
-
+    const token = localStorage.getItem("token");
     try {
       const res = await fetch(
         `${API_URL}/api/enriquecimento/remover-historico`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             cnpj: company.cnpj,
             index,

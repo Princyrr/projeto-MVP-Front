@@ -139,9 +139,19 @@ export default function Contacts({ cnpj, isRegistered }) {
     if (!confirmDelete) return;
 
     try {
-      await fetch(`${API_URL}/api/contacts/${id}`, {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/api/contacts/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Erro ao deletar");
+      }
 
       setHistorico(historico.filter((c) => c._id !== id));
     } catch {

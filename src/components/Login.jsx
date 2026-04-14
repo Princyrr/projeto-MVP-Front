@@ -113,7 +113,7 @@ export default function Login({ onLogin }) {
         </div>
 
         <div className="mt-6 text-center text-xs text-slate-500">
-          Sistema de Inteligência de Empresas
+          Sistema de Enriquecimento de Dados Empresariais
         </div>
       </div>
     </div>

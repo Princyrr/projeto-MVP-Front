@@ -40,8 +40,13 @@ export default function Insights({ cnpj, isRegistered }) {
       try {
         setLoading(true);
         setError("");
+        const token = localStorage.getItem("token");
 
-        const res = await fetch(`${API_URL}/api/insights/${cnpj}`);
+        const res = await fetch(`${API_URL}/api/insights/${cnpj}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!res.ok) {
           console.warn("API respondeu com erro:", res.status);
@@ -98,9 +103,14 @@ export default function Insights({ cnpj, isRegistered }) {
     try {
       setLoading(true);
 
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_URL}/api/insights/${cnpj}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           descricao: form.descricao,
           categoria: form.categoria,
@@ -139,8 +149,13 @@ export default function Insights({ cnpj, isRegistered }) {
 
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
+
       await fetch(`${API_URL}/api/insights/${id}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       setInsights(insights.filter((i) => i._id !== id));
@@ -164,9 +179,14 @@ export default function Insights({ cnpj, isRegistered }) {
     try {
       setLoading(true);
 
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_URL}/api/insights/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           descricao: editForm.descricao,
           categoria: editForm.categoria,

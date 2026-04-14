@@ -27,10 +27,24 @@ function App() {
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/companies`)
-      .then((res) => res.json())
-      .then((data) => setRegisteredCompanies(data));
-  }, []);
+    if (!user) return;
+
+    const loadCompanies = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/companies`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      setRegisteredCompanies(Array.isArray(data) ? data : []);
+    };
+
+    loadCompanies();
+  }, [user]);
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
@@ -67,7 +81,7 @@ function App() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           ...company,
@@ -124,7 +138,7 @@ function App() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             status_prospeccao: updatedCompany.status_prospeccao,
@@ -158,10 +172,10 @@ function App() {
           <div className="max-w-7xl mx-auto px-6 py-12 pt-20 md:pt-10">
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                Bem-vindo ao Sistema de Consulta de Empresas
+                Bem‑vindo ao Sistema de Enriquecimento de Dados Empresariais
               </h1>
               <p className="text-xl text-gray-600">
-                Consulte informações detalhadas de empresas por CNPJ
+                Registre e consulte informações detalhadas de empresas por CNPJ
               </p>
             </div>
 
