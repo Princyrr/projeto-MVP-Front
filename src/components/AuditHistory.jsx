@@ -8,7 +8,13 @@ export default function AuditHistory({ cnpj }) {
   useEffect(() => {
     if (!cnpj) return;
 
-    fetch(`${API_URL}/api/audit/${cnpj}`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${API_URL}/api/audit/${cnpj}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => setLogs(data))
       .catch((err) => console.error(err));

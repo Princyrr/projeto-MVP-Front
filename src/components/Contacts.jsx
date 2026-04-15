@@ -52,7 +52,13 @@ export default function Contacts({ cnpj, isRegistered }) {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_URL}/api/companies/${cnpj}/contacts`);
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`${API_URL}/api/companies/${cnpj}/contacts`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!res.ok) {
         console.warn("Erro na API:", res.status);
@@ -83,25 +89,27 @@ export default function Contacts({ cnpj, isRegistered }) {
 
       const payload = {
         ...form,
-        createdBy: {
-          _id: currentUser._id,
-          firstName: currentUser.firstName,
-          lastName: currentUser.lastName,
-        },
       };
 
       let res;
+      const token = localStorage.getItem("token");
 
       if (editingId) {
         res = await fetch(`${API_URL}/api/contacts/${editingId}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       } else {
         res = await fetch(`${API_URL}/api/companies/${cnpj}/contacts`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       }
@@ -255,7 +263,8 @@ export default function Contacts({ cnpj, isRegistered }) {
             <p className="text-xs text-gray-600">✉️ {c.email}</p>
 
             <p className="text-xs text-gray-500 mt-2">
-              👤 {c.createdBy?.firstName} {c.createdBy?.lastName}
+              👤 Adicionado por {c.createdBy?.firstName || "Desconhecido"}{" "}
+              {c.createdBy?.lastName || ""}
             </p>
 
             <div className="flex gap-2 mt-2">

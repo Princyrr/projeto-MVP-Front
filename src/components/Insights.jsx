@@ -116,11 +116,12 @@ export default function Insights({ cnpj, isRegistered }) {
           categoria: form.categoria,
           categoriaCustom:
             form.categoria === "outros" ? form.outraCategoria : null,
-          user: {
-            _id: currentUser._id,
-            firstName: currentUser.firstName,
-            lastName: currentUser.lastName,
-          },
+          body: JSON.stringify({
+            descricao: form.descricao,
+            categoria: form.categoria,
+            categoriaCustom:
+              form.categoria === "outros" ? form.outraCategoria : null,
+          }),
         }),
       });
 
@@ -192,11 +193,12 @@ export default function Insights({ cnpj, isRegistered }) {
           categoria: editForm.categoria,
           categoriaCustom:
             editForm.categoria === "outros" ? editForm.outraCategoria : null,
-          user: {
-            _id: currentUser._id,
-            firstName: currentUser.firstName,
-            lastName: currentUser.lastName,
-          },
+          body: JSON.stringify({
+            descricao: form.descricao,
+            categoria: form.categoria,
+            categoriaCustom:
+              form.categoria === "outros" ? form.outraCategoria : null,
+          }),
         }),
       });
 

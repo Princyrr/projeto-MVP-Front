@@ -73,14 +73,15 @@ export default function Enriquecimento({ company, isRegistered, currentUser }) {
         },
         body: JSON.stringify({
           cnpj: company.cnpj,
-          user: {
-            firstName: currentUser?.firstName,
-            lastName: currentUser?.lastName,
-          },
           ...form,
           potencial_comercial: form.potencial_comercial || null,
         }),
       });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Erro ao salvar enriquecimento");
+      }
 
       const data = await res.json();
       setHistorico(data.historico_atualizacao || []);
